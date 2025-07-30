@@ -1,8 +1,7 @@
 import copy
 
 import numpy as np
-from typing import cast, List, Optional, Set, Dict, Tuple
-import numpy.typing as npt
+from typing import cast, List, Optional, Dict, Tuple
 
 ALPHABET_SIZE = ord('z') - ord('a') + 1
 
@@ -70,9 +69,9 @@ class Engine:
         self._vocabIdx = {w: i for i, w in enumerate(self._vocab)}
         self._vocabArray = cast(np.ndarray[tuple[int, int, int], np.int32], np.array([Utils.toArray(w) for w in self._vocab]))
 
-    def guess(self, guess: str, updateState: bool=True) -> Tuple[bool, Optional[State]]:
+    def guess(self, guess: str, updateState: bool=True) -> bool:
 
-
+        self._nTries += 1
         newState: Optional[State] = copy.deepcopy(self._state) if updateState else None
 
         if self._history is not None:
@@ -91,9 +90,12 @@ class Engine:
 
             self._state = newState
 
-        return guess == self._secret, newState
+        return guess == self._secret
 
-    def getFeasebleSet(self) -> np.ndarray[tuple[int], np.dtype[bool]]:
+    def getState(self) -> State:
+        return self._state
+
+    def getFeasibleSet(self) -> np.ndarray[tuple[int], np.dtype[bool]]:
 
         letters = np.sum(self._vocabArray, -1)
         feasebleSet: np.ndarray[tuple[int], np.dtype[bool]] = np.all(np.less_equal(self._state.lowerBonds, letters), axis=-1)
@@ -101,8 +103,22 @@ class Engine:
         feasebleSet &= np.all((self._state.knownValues & self._vocabArray) == self._state.knownValues, axis = (-1,-2))
         feasebleSet &= ~np.any(self._state.wrongValues & self._vocabArray, axis = (-1,-2))
 
-
         return feasebleSet
+
+    def getFeasibleSetAverage(self) -> np.ndarray[tuple[int, int], np.float32]:
+        return np.average(self._vocabArray[self.getFeasibleSet(), :], axis = 0)
+
+    def getNTries(self) -> int:
+        return self._nTries
+
+    def getVocab(self) -> List[str]:
+        return self._vocab
+
+    def getVocabArray(self) -> np.ndarray[tuple[int, int, int], np.int32]:
+        return self._vocabArray
+
+    def getHistory(self) -> List[str]:
+        return self._history
 
 
 

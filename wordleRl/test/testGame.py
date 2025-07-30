@@ -2,8 +2,10 @@ import unittest
 from wordleRl.wordleEngine import Utils, ALPHABET_SIZE, Engine
 import numpy as np
 
+from wordleRl.wordleGame import PlayerCenter, Game
 
-class TestEngine(unittest.TestCase):
+
+class TestGame(unittest.TestCase):
 
     def test_toArray(self):
         expected: np.ndarray = np.full(shape=(ALPHABET_SIZE, 2), fill_value = 0, dtype=np.int32)
@@ -15,11 +17,12 @@ class TestEngine(unittest.TestCase):
     def test_guess(self):
 
         engine = Engine("abc", ["aad", "aab", "bca", "abc"])
-        end, _ = engine.guess("abc", updateState=False)
+        end = engine.guess("abc", updateState=False)
         self.assertTrue(end)
 
         engine = Engine("abc", ["aad", "aab", "bca", "abc"])
-        notEnd, newState = engine.guess("aad", updateState=True)
+        notEnd = engine.guess("aad", updateState=True)
+        newState = engine.getState()
         self.assertFalse(notEnd)
 
         self.assertTrue(newState.knownValues[0,0] == 1)
@@ -36,13 +39,32 @@ class TestEngine(unittest.TestCase):
         self.assertTrue(newState.upperBonds[3] == 0)
         self.assertTrue(newState.upperBonds.sum() == 3*ALPHABET_SIZE - 5)
 
-    def test_feasable(self):
+        self.assertEqual(engine.getNTries(), 1)
+
+    def test_feasible(self):
         engine = Engine("abcd", ["abcd", "aacb", "aacd", "abce"])
-        end, _ = engine.guess("aacb", updateState=True)
-        feasSet = engine.getFeasebleSet()
+        engine.guess("aacb", updateState=True)
+        feasSet = engine.getFeasibleSet()
         self.assertFalse(np.any(feasSet ^ np.array([True, False, False, True])))
 
+        averg = engine.getFeasibleSetAverage()
+        expAverg = np.zeros(shape=(ALPHABET_SIZE, 4), dtype=np.float32)
+        expAverg[0, 0] = 1
+        expAverg[1, 1] = 1
+        expAverg[2, 2] = 1
+        expAverg[3, 3] = 0.5
+        expAverg[4, 3] = 0.5
 
+        np.testing.assert_allclose(averg, expAverg, 1e-6)
+
+    def test_game(self):
+        player = PlayerCenter()
+        game = Game(player, vocab=["aaa", "aab", "bcd", "abc"], secret="abc", record=True)
+
+        self.assertEqual(player.makeGuess(game.getEngine()), "aaa")
+
+        game.play()
+        self.assertListEqual(game.getEngine().getHistory(), ["aaa", "abc"])
 
 
 
