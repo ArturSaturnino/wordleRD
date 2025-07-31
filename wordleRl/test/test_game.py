@@ -31,12 +31,12 @@ class TestGame(unittest.TestCase):
         self.assertTrue(newState.wrongValues[3, 2] == 1)
         self.assertTrue(newState.wrongValues.sum() == 2)
 
-        self.assertTrue(newState.lowerBonds[0] == 1)
-        self.assertTrue(newState.lowerBonds.sum() == 1)
+        self.assertTrue(newState.lowerBounds[0] == 1)
+        self.assertTrue(newState.lowerBounds.sum() == 1)
 
-        self.assertTrue(newState.upperBonds[0] == 1)
-        self.assertTrue(newState.upperBonds[3] == 0)
-        self.assertTrue(newState.upperBonds.sum() == 3*ALPHABET_SIZE - 5)
+        self.assertTrue(newState.upperBounds[0] == 1)
+        self.assertTrue(newState.upperBounds[3] == 0)
+        self.assertTrue(newState.upperBounds.sum() == 3*ALPHABET_SIZE - 5)
 
         self.assertEqual(engine.getNTries(), 2)
 

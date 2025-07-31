@@ -16,8 +16,8 @@ class Utils:
 
 class State:
     _wordSize: int
-    _upperBonds: np.ndarray[tuple[int], np.int32]
-    _lowerBonds: np.ndarray[tuple[int], np.int32]
+    _upperBounds: np.ndarray[tuple[int], np.int32]
+    _lowerBounds: np.ndarray[tuple[int], np.int32]
     _knownValues: np.ndarray[tuple[int, int], np.int32]
     _wrongValues: np.ndarray[tuple[int, int], np.int32]
 
@@ -25,18 +25,18 @@ class State:
 
         self._wordSize = wordSize
 
-        self._upperBonds = np.full(shape=(ALPHABET_SIZE,), fill_value=wordSize, dtype=np.int32)
-        self._lowerBonds = np.full(shape=(ALPHABET_SIZE,), fill_value=0, dtype=np.int32)
+        self._upperBounds = np.full(shape=(ALPHABET_SIZE,), fill_value=wordSize, dtype=np.int32)
+        self._lowerBounds = np.full(shape=(ALPHABET_SIZE,), fill_value=0, dtype=np.int32)
         self._knownValues = np.full(shape=(ALPHABET_SIZE, self._wordSize), fill_value= 0, dtype=np.int32)
         self._wrongValues = np.full(shape=(ALPHABET_SIZE, self._wordSize), fill_value= 0, dtype=np.int32)
 
     @property
-    def lowerBonds(self) -> np.ndarray[tuple[int], np.int32]:
-        return self._lowerBonds
+    def lowerBounds(self) -> np.ndarray[tuple[int], np.int32]:
+        return self._lowerBounds
 
     @property
-    def upperBonds(self) -> np.ndarray[tuple[int], np.int32]:
-        return self._upperBonds
+    def upperBounds(self) -> np.ndarray[tuple[int], np.int32]:
+        return self._upperBounds
 
     @property
     def knownValues(self) -> np.ndarray[tuple[int, int], np.int32]:
@@ -80,8 +80,8 @@ class Engine:
             wordCountGuess = np.sum(guessArr, axis = -1)
             wordCountSecret = np.sum(self._secretArr, axis = -1)
 
-            self._state._lowerBonds = cast(np.ndarray[tuple[int], np.int32], np.maximum(np.minimum(wordCountGuess, wordCountSecret), self._state.lowerBonds))
-            self._state._upperBonds = cast(np.ndarray[tuple[int], np.int32], np.where(wordCountGuess > wordCountSecret, wordCountSecret, self._state.upperBonds))
+            self._state._lowerBounds = cast(np.ndarray[tuple[int], np.int32], np.maximum(np.minimum(wordCountGuess, wordCountSecret), self._state.lowerBounds))
+            self._state._upperBounds = cast(np.ndarray[tuple[int], np.int32], np.where(wordCountGuess > wordCountSecret, wordCountSecret, self._state.upperBounds))
 
             self._state._knownValues = (guessArr & self._secretArr) | self._state.knownValues
             self._state._wrongValues = (guessArr ^ self._secretArr) & guessArr | self._state.wrongValues
@@ -94,8 +94,8 @@ class Engine:
     def getFeasibleSet(self) -> np.ndarray[tuple[int], np.dtype[bool]]:
 
         letters = np.sum(self._vocabArray, -1)
-        feasebleSet: np.ndarray[tuple[int], np.dtype[bool]] = np.all(np.less_equal(self._state.lowerBonds, letters), axis=-1)
-        feasebleSet  &= np.all(np.less_equal(letters, self._state.upperBonds), axis = -1)
+        feasebleSet: np.ndarray[tuple[int], np.dtype[bool]] = np.all(np.less_equal(self._state.lowerBounds, letters), axis=-1)
+        feasebleSet  &= np.all(np.less_equal(letters, self._state.upperBounds), axis = -1)
         feasebleSet &= np.all((self._state.knownValues & self._vocabArray) == self._state.knownValues, axis = (-1,-2))
         feasebleSet &= ~np.any(self._state.wrongValues & self._vocabArray, axis = (-1,-2))
 
