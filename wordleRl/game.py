@@ -1,21 +1,22 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 import random
 from typing import Optional, List
-import numpy as np
+import numpy as np # type: ignore
 
-import wordleRl.wordleEngine as wordleEngine
+import wordleRl.engine as wordleEngine
 
 
 class Player(ABC):
 
+    @abstractmethod
     def makeGuess(self, engine:wordleEngine.Engine) -> str:
-        pass
+        ...
 
 
 class PlayerCenter(Player):
 
     def __init__(self):
-        pass
+        ...
 
     def makeGuess(self, engine:wordleEngine.Engine) -> str:
         target = engine.getFeasibleSetAverage()
@@ -50,4 +51,8 @@ class Game:
 vocab = []
 with open("resources/words.txt", "r") as f:
     vocab = [w.strip('\n') for w in f.readlines()]
+
+game = Game(PlayerCenter(), vocab, record=True, secret="assay")
+game.play()
+print(game.getEngine().getHistory())
 """

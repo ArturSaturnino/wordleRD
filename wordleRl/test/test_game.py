@@ -1,8 +1,8 @@
 import unittest
-from wordleRl.wordleEngine import Utils, ALPHABET_SIZE, Engine
-import numpy as np
+from wordleRl.engine import Utils, ALPHABET_SIZE, Engine
+import numpy as np # type: ignore
 
-from wordleRl.wordleGame import PlayerCenter, Game
+from wordleRl.game import PlayerCenter, Game
 
 
 class TestGame(unittest.TestCase):
@@ -20,7 +20,6 @@ class TestGame(unittest.TestCase):
         end = engine.guess("abc", updateState=False)
         self.assertTrue(end)
 
-        engine = Engine("abc", ["aad", "aab", "bca", "abc"])
         notEnd = engine.guess("aad", updateState=True)
         newState = engine.getState()
         self.assertFalse(notEnd)
@@ -39,7 +38,7 @@ class TestGame(unittest.TestCase):
         self.assertTrue(newState.upperBonds[3] == 0)
         self.assertTrue(newState.upperBonds.sum() == 3*ALPHABET_SIZE - 5)
 
-        self.assertEqual(engine.getNTries(), 1)
+        self.assertEqual(engine.getNTries(), 2)
 
     def test_feasible(self):
         engine = Engine("abcd", ["abcd", "aacb", "aacd", "abce"])

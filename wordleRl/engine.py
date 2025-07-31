@@ -1,6 +1,4 @@
-import copy
-
-import numpy as np
+import numpy as np # type: ignore
 from typing import cast, List, Optional, Dict, Tuple
 
 ALPHABET_SIZE = ord('z') - ord('a') + 1
@@ -72,23 +70,21 @@ class Engine:
     def guess(self, guess: str, updateState: bool=True) -> bool:
 
         self._nTries += 1
-        newState: Optional[State] = copy.deepcopy(self._state) if updateState else None
 
         if self._history is not None:
             self._history.append(guess)
 
         if updateState and guess in self._vocabIdx.keys():
+
             guessArr = self._vocabArray[self._vocabIdx[guess], :]
             wordCountGuess = np.sum(guessArr, axis = -1)
             wordCountSecret = np.sum(self._secretArr, axis = -1)
 
-            newState._lowerBonds = cast(np.ndarray[tuple[int], np.int32], np.maximum(np.minimum(wordCountGuess, wordCountSecret), newState.lowerBonds))
-            newState._upperBonds = cast(np.ndarray[tuple[int], np.int32], np.where(wordCountGuess > wordCountSecret, wordCountSecret, newState.upperBonds))
+            self._state._lowerBonds = cast(np.ndarray[tuple[int], np.int32], np.maximum(np.minimum(wordCountGuess, wordCountSecret), self._state.lowerBonds))
+            self._state._upperBonds = cast(np.ndarray[tuple[int], np.int32], np.where(wordCountGuess > wordCountSecret, wordCountSecret, self._state.upperBonds))
 
-            newState._knownValues = (guessArr & self._secretArr) | newState.knownValues
-            newState._wrongValues = (guessArr ^ self._secretArr) & guessArr | newState.wrongValues
-
-            self._state = newState
+            self._state._knownValues = (guessArr & self._secretArr) | self._state.knownValues
+            self._state._wrongValues = (guessArr ^ self._secretArr) & guessArr | self._state.wrongValues
 
         return guess == self._secret
 
@@ -117,7 +113,7 @@ class Engine:
     def getVocabArray(self) -> np.ndarray[tuple[int, int, int], np.int32]:
         return self._vocabArray
 
-    def getHistory(self) -> List[str]:
+    def getHistory(self) -> Optional[List[str]]:
         return self._history
 
 
